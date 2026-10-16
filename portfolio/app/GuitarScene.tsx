@@ -3,14 +3,29 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef, useState} from "react";
 import type { Mesh, SpotLight } from "three";
 import {SpotLightHelper} from "three";
-import { OrbitControls, useHelper, useGLTF, Center } from "@react-three/drei";
+import { PresentationControls, useHelper, useGLTF, Center } from "@react-three/drei";
 import { Leva,useControls } from "leva";
+import CameraRig from "./CameraRig";
 
+
+type ClickPoint = {
+    point: {
+        x: number;
+        y: number;
+        z: number;
+    };
+};
 function Guitar (){
     const guitarModel = useGLTF ("/models/guitar.glb").scene; // Load only the guitar model
     return (
         <Center>
-        <primitive object = {guitarModel} scale = {5} />
+        <primitive 
+            object = {guitarModel} 
+            scale = {6} 
+            onClick = {(event:ClickPoint)=>
+                console.log(event.point)
+            } //Used to get the coordinates of the click on the guitar
+            />
         </Center>
     )
 }
@@ -19,9 +34,9 @@ function Scene() {
     const SpotLightRef = useRef<SpotLight>(null!);
     const {lightPosition, lightAngle, lightPenumbra, lightIntensity, lightColor} = useControls({
         lightPosition: [0,6,3],
-        lightAngle: 0.35,
+        lightAngle: 0.4,
         lightPenumbra: 0.6,
-        lightIntensity: 60,
+        lightIntensity: 80,
         lightColor: "#fff4e0",
         
     })
@@ -40,8 +55,10 @@ function Scene() {
             ref = {SpotLightRef} 
             
         />
+        <CameraRig />
+        <PresentationControls>
         <Guitar/>
-        <OrbitControls />
+        </PresentationControls>
         </>
     )
 }
