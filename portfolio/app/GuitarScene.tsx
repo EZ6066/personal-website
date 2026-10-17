@@ -1,36 +1,42 @@
 "use client";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { useRef, useState} from "react";
-import type { Mesh, SpotLight } from "three";
+import type { SpotLight } from "three";
 import {SpotLightHelper} from "three";
 import { PresentationControls, useHelper, useGLTF, Center } from "@react-three/drei";
-import { Leva,useControls } from "leva";
+import { Leva, useControls } from "leva";
 import CameraRig from "./CameraRig";
 
+// type ClickPoint = {
+//     point: {
+//         x: number;
+//         y: number;
+//         z: number;
+//     };
+// };
 
-type ClickPoint = {
-    point: {
-        x: number;
-        y: number;
-        z: number;
-    };
-};
-function Guitar (){
+type GuitarProps = {
+    onClick: () => void;
+}
+
+function Guitar ({onClick}: GuitarProps){
     const guitarModel = useGLTF ("/models/guitar.glb").scene; // Load only the guitar model
     return (
         <Center>
         <primitive 
             object = {guitarModel} 
             scale = {6} 
-            onClick = {(event:ClickPoint)=>
-                console.log(event.point)
-            } //Used to get the coordinates of the click on the guitar
+            onClick = {onClick}
+            // onClick = {(event:ClickPoint)=>
+            //     console.log(event.point)
+            // }//Used to get the coordinates of the click on the guitar
             />
         </Center>
     )
 }
 
 function Scene() {
+    const progress = useRef<number>(0);
     const SpotLightRef = useRef<SpotLight>(null!);
     const {lightPosition, lightAngle, lightPenumbra, lightIntensity, lightColor} = useControls({
         lightPosition: [0,6,3],
@@ -40,10 +46,11 @@ function Scene() {
         lightColor: "#fff4e0",
         
     })
+    const [isZoomed, setIsZoomed] = useState(false);
 
     useHelper(SpotLightRef, SpotLightHelper); // Show the spot light helper
 
-    return (
+    return (    
         <>
         <ambientLight intensity = {0.05} />
         <spotLight 
@@ -55,9 +62,21 @@ function Scene() {
             ref = {SpotLightRef} 
             
         />
-        <CameraRig />
-        <PresentationControls>
-        <Guitar/>
+        <CameraRig
+            progress = {progress}
+            setIsZoomed = {setIsZoomed}
+        />
+        <PresentationControls 
+            snap enabled = {!isZoomed}
+        >
+        <Guitar
+            onClick = {()=>{
+                if (!isZoomed) {
+                    progress.current = 1;
+                    setIsZoomed(true);
+                }
+            }}
+        />
         </PresentationControls>
         </>
     )
